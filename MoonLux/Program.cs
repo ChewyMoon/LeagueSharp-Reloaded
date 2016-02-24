@@ -112,6 +112,10 @@
 
         #region Methods
 
+        /// <summary>
+        ///     Fired on an incoming gapcloser.
+        /// </summary>
+        /// <param name="gapcloser">The gapcloser.</param>
         private static void AntiGapcloserOnOnEnemyGapcloser(ActiveGapcloser gapcloser)
         {
             if (!gapcloser.Sender.IsValidTarget(Q.Range) || !Menu.Item("QGapcloser").IsActive())
@@ -122,6 +126,11 @@
             Q.Cast(gapcloser.Sender);
         }
 
+        /// <summary>
+        ///     Called when a <see cref="AttackableUnit" /> takes/gives damage.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="args">The <see cref="AttackableUnitDamageEventArgs" /> instance containing the event data.</param>
         private static void AttackableUnit_OnDamage(AttackableUnit sender, AttackableUnitDamageEventArgs args)
         {
             var source = ObjectManager.GetUnitByNetworkId<GameObject>(args.SourceNetworkId);
@@ -147,6 +156,10 @@
             }
         }
 
+        /// <summary>
+        ///     Casts the e.
+        /// </summary>
+        /// <param name="target">The target.</param>
         private static void CastE(Obj_AI_Hero target)
         {
             if (Environment.TickCount - E.LastCastAttemptT < E.Delay * 1000)
@@ -169,6 +182,10 @@
             }
         }
 
+        /// <summary>
+        ///     Casts the q.
+        /// </summary>
+        /// <param name="target">The target.</param>
         private static void CastQ(Obj_AI_Hero target)
         {
             if (Menu.Item("QThroughMinions").IsActive())
@@ -184,11 +201,10 @@
                 {
                     Q.Cast(prediction.CastPosition);
                 }
-
-                else
-                {
-                    Q.Cast(target);
-                }
+            }
+            else
+            {
+                Q.Cast(target);
             }
         }
 
@@ -272,6 +288,11 @@
             Menu.Item("HarassKeybind").Permashow();
         }
 
+        /// <summary>
+        ///     Gets the damage done to a unit.
+        /// </summary>
+        /// <param name="hero">The hero.</param>
+        /// <returns></returns>
         private static float DamageToUnit(Obj_AI_Hero hero)
         {
             var damage = 0f;
@@ -383,7 +404,7 @@
 
             var target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
-            if (!target.IsValidTarget())
+            if (!target.IsValidTarget() || Player.ManaPercent < Menu.Item("HarassMinMana").GetValue<Slider>().Value)
             {
                 return;
             }
@@ -392,7 +413,7 @@
             {
                 if (spellWeaveCombo)
                 {
-                    if (!target.HasPassive() || target.Distance(Player) > AutoAttackRange)
+                    if (!target.HasPassive())
                     {
                         CastQ(target);
                     }
@@ -628,6 +649,7 @@
         /// </summary>
         private static void JungleKillSteal()
         {
+            // TODO LMAO
         }
 
         /// <summary>
@@ -673,6 +695,11 @@
     {
         #region Public Methods and Operators
 
+        /// <summary>
+        ///     Gets the passive damage.
+        /// </summary>
+        /// <param name="target">The target.</param>
+        /// <returns></returns>
         public static float GetPassiveDamage(this Obj_AI_Hero target)
         {
             return

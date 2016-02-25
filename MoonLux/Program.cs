@@ -409,11 +409,6 @@
                 return;
             }
 
-            if (!Orbwalker.ShouldWait() && Orbwalker.GetTarget().Type != GameObjectType.obj_AI_Hero)
-            {
-                return;
-            }
-
             if (useQHarass && Q.IsReady())
             {
                 if (spellWeaveCombo)

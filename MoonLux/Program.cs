@@ -17,20 +17,6 @@
         #region Properties
 
         /// <summary>
-        ///     Gets the automatic attack range.
-        /// </summary>
-        /// <value>
-        ///     The automatic attack range.
-        /// </value>
-        private static float AutoAttackRange
-        {
-            get
-            {
-                return Orbwalking.GetRealAutoAttackRange(Player);
-            }
-        }
-
-        /// <summary>
         ///     Gets or sets the e.
         /// </summary>
         /// <value>
@@ -261,6 +247,17 @@
                 x =>
                 shieldMenu.AddItem(new MenuItem("Shield" + x.ChampionName, "Shield " + x.ChampionName).SetValue(true)));
             Menu.AddSubMenu(shieldMenu);
+
+            var jungleKsMenu = new Menu("Jungle Steal Settings", "JungleKS");
+            jungleKsMenu.AddItem(new MenuItem("StealBaron", "Steal Baron").SetValue(true));
+            jungleKsMenu.AddItem(new MenuItem("StealDragon", "Steal Dragon").SetValue(true));
+            jungleKsMenu.AddItem(new MenuItem("StealBlueBuff", "Steal Blue Buff").SetValue(true));
+            jungleKsMenu.AddItem(new MenuItem("StealRedBuff", "Steal Red Buff").SetValue(true));
+
+            jungleKsMenu.AddItem(
+                new MenuItem("StealBuffMode", "Buff Stealer Mode").SetValue(
+                    new StringList(new[] { "Only Enemy", "Both", "Only Ally" })));
+            Menu.AddSubMenu(jungleKsMenu);
 
             var miscMenu = new Menu("Miscellaneous Settings", "MiscSettings");
             miscMenu.AddItem(
@@ -649,7 +646,95 @@
         /// </summary>
         private static void JungleKillSteal()
         {
-            // TODO LMAO
+            if (!R.IsReady())
+            {
+                return;
+            }
+
+            var stealBlue = Menu.Item("StealBlueBuff").IsActive();
+            var stealRed = Menu.Item("StealRedBuff").IsActive();
+            var stealDragon = Menu.Item("StealDragon").IsActive();
+            var stealBaron = Menu.Item("StealBaron").IsActive();
+            var stealBuffMode = Menu.Item("StealBuffMode").GetValue<StringList>().SelectedIndex;
+
+            if (stealBaron)
+            {
+                var baron =
+                    ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(x => x.CharData.BaseSkinName.Equals("SRU_Baron"));
+
+                if (baron != null)
+                {
+                    var healthPred = HealthPrediction.GetHealthPrediction(baron, (int)(R.Delay * 1000));
+
+                    if (R.GetDamage(baron) >= healthPred)
+                    {
+                        R.Cast(baron);
+                    }
+                }
+            }
+
+            if (stealDragon)
+            {
+                var dragon =
+                    ObjectManager.Get<Obj_AI_Minion>().FirstOrDefault(x => x.CharData.BaseSkinName.Equals("SRU_Dragon"));
+
+                if (dragon != null)
+                {
+                    var healthPred = HealthPrediction.GetHealthPrediction(dragon, (int)(R.Delay * 1000));
+
+                    if (R.GetDamage(dragon) >= healthPred)
+                    {
+                        R.Cast(dragon);
+                    }
+                }
+            }
+
+            if (stealBlue)
+            {
+                var blueBuffs =
+                    ObjectManager.Get<Obj_AI_Minion>().Where(x => x.CharData.BaseSkinName.Equals("SRU_Blue")).ToList();
+
+                if (blueBuffs.Any())
+                {
+                    var blueBuff =
+                        blueBuffs.Where(
+                            x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000)))
+                            .FirstOrDefault(
+                                x =>
+                                (x.CountAlliesInRange(1000) == 0 && stealBuffMode == 0)
+                                || (x.CountAlliesInRange(1000) > 0 && stealBuffMode == 2) || stealBuffMode == 3);
+
+                    if (blueBuff != null)
+                    {
+                        R.Cast(blueBuff);
+                    }
+                }
+            }
+
+            if (!stealRed)
+            {
+                return;
+            }
+
+            var redBuffs =
+                ObjectManager.Get<Obj_AI_Minion>().Where(x => x.CharData.BaseSkinName.Equals("SRU_Red")).ToList();
+
+            if (!redBuffs.Any())
+            {
+                return;
+            }
+
+            var redBuff =
+                redBuffs.Where(x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000)))
+                    .FirstOrDefault(
+                        x =>
+                        (x.CountAlliesInRange(1000) == 0 && stealBuffMode == 0)
+                        || (x.CountAlliesInRange(1000) > 0 && stealBuffMode == 2) || stealBuffMode == 3);
+
+            if (redBuff != null)
+            {
+                R.Cast(redBuff);
+            }
         }
 
         /// <summary>

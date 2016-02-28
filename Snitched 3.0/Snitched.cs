@@ -1,0 +1,204 @@
+﻿namespace Snitched
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using LeagueSharp;
+    using LeagueSharp.Common;
+
+    internal class Snitched
+    {
+        #region Properties
+
+        /// <summary>
+        ///     Gets or sets the spells.
+        /// </summary>
+        /// <value>
+        ///     The spells.
+        /// </value>
+        private List<Spell> Spells { get; set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        ///     Loads Snitched.
+        /// </summary>
+        /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
+        public void Load(EventArgs args)
+        {
+            if (ObjectManager.Player.ChampionName == "Ezreal" || ObjectManager.Player.ChampionName == "Vayne")
+            {
+                Game.PrintChat(
+                    "<font color=\"#E9259D\"><b>Snitched Reloaded:</b></font> " + ObjectManager.Player.ChampionName
+                    + " is currently disabled due to a L# bug that will crash the game. Sorry about that.");
+                return;
+            }
+
+            Config.Instance.CreateMenu();
+
+            HealthPrediction.Load();
+
+            ObjectTracker.OnObjectiveCreated += (sender, type) => HealthPrediction.TrackObject((Obj_AI_Base)sender);
+            ObjectTracker.OnObjectiveDead += (sender, type) => HealthPrediction.UntrackObject((Obj_AI_Base)sender);
+            ObjectTracker.Load();
+
+            this.Spells = SpellLoader.GetUsableSpells();
+
+            Game.OnUpdate += this.Game_OnUpdate;
+
+            Game.PrintChat(
+                "<font color=\"#E9259D\"><b>Snitched Reloaded:</b></font> "
+                + "by <font color=\"#9400D3\"><b>ChewyMoon</b></font> Loaded!");
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        ///     Fired when the game is updated.
+        /// </summary>
+        /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void Game_OnUpdate(EventArgs args)
+        {
+            if (ObjectTracker.Baron != null)
+            {
+                this.HandleObjective(ObjectTracker.Baron, ObjectiveType.Baron);
+            }
+
+            if (ObjectTracker.Dragon != null)
+            {
+                this.HandleObjective(ObjectTracker.Dragon, ObjectiveType.Dragon);
+            }
+
+            if (ObjectTracker.BlueBuffs.Any())
+            {
+                ObjectTracker.BlueBuffs.ForEach(x => this.HandleBuff(x, ObjectiveType.Blue));
+            }
+
+            if (ObjectTracker.RedBuffs.Any())
+            {
+                ObjectTracker.RedBuffs.ForEach(x => this.HandleBuff(x, ObjectiveType.Red));
+            }
+
+            this.StealKills();
+        }
+
+        /// <summary>
+        ///     Handles the buff.
+        /// </summary>
+        /// <param name="unit">The unit.</param>
+        /// <param name="type">The type.</param>
+        private void HandleBuff(Obj_AI_Base unit, ObjectiveType type)
+        {
+            if (!Config.Instance["Steal" + type + "Buff"].IsActive())
+            {
+                return;
+            }
+
+            var alliesinRange = unit.CountAlliesInRange(1000);
+
+            if (!Config.Instance["StealAllyBuffs"].IsActive() && alliesinRange > 0)
+            {
+                return;
+            }
+
+            this.StealObject(unit, StealType.BuffSteal);
+        }
+
+        /// <summary>
+        ///     Handles the objective.
+        /// </summary>
+        /// <param name="unit">The unit.</param>
+        /// <param name="type">The type.</param>
+        private void HandleObjective(Obj_AI_Base unit, ObjectiveType type)
+        {
+            if (!(Config.Instance["SmartObjectiveSteal"].IsActive() && unit.CountEnemiesInRange(500) > 0)
+                || !Config.Instance["StealObjectiveKeyBind"].IsActive() || !Config.Instance["Steal" + type].IsActive())
+            {
+                return;
+            }
+
+            this.StealObject(unit, StealType.ObjectiveSteal);
+        }
+
+        /// <summary>
+        ///     Steals the kills.
+        /// </summary>
+        private void StealKills()
+        {
+            if (Config.Instance["DontStealOnCombo"].IsActive()
+                && Orbwalking.Orbwalker.Instances.Any(x => x.ActiveMode == Orbwalking.OrbwalkingMode.Combo))
+            {
+                return;
+            }
+
+            foreach (var enemy in
+                HeroManager.Enemies.Where(x => x.IsValidTarget() && Config.Instance["KS" + x.ChampionName].IsActive()))
+            {
+                var spell =
+                    this.Spells.Where(
+                        x =>
+                        x.GetDamage(enemy) > enemy.Health && x.IsInRange(enemy)
+                        && Config.Instance["KillSteal" + x.Slot].IsActive()).MinOrDefault(x => x.GetDamage(enemy));
+
+                if (spell != null)
+                {
+                    spell.Cast(enemy);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Steals the object.
+        /// </summary>
+        /// <param name="unit">The unit.</param>
+        /// <param name="type">The type.</param>
+        private void StealObject(Obj_AI_Base unit, StealType type)
+        {
+            var spell =
+                this.Spells.Where(
+                    x => x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive())
+                    .MaxOrDefault(x => x.GetDamage(unit));
+
+            if (spell == null)
+            {
+                return;
+            }
+
+            var eta = ObjectManager.Player.Distance(unit) / spell.Speed + spell.Delay + (Game.Ping / 2f / 1000);
+            var healthPred = HealthPrediction.GetPredictedHealth(unit, eta);
+
+            if (spell.GetDamage(unit) >= healthPred)
+            {
+                spell.Cast(unit);
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    ///     The type of stealing. Used to check menu values.
+    /// </summary>
+    internal enum StealType
+    {
+        /// <summary>
+        ///     The objective steal
+        /// </summary>
+        ObjectiveSteal,
+
+        /// <summary>
+        ///     The kill steal
+        /// </summary>
+        KillSteal,
+
+        /// <summary>
+        ///     The buff steal
+        /// </summary>
+        BuffSteal
+    }
+}

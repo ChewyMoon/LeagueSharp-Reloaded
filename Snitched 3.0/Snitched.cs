@@ -129,13 +129,18 @@
             }
 
             foreach (var enemy in
-                HeroManager.Enemies.Where(x => x.IsValidTarget() && Config.Instance["KS" + x.ChampionName].IsActive()))
+                HeroManager.Enemies.Where(
+                    x =>
+                    x.IsValidTarget(Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
+                    && Config.Instance["KS" + x.ChampionName].IsActive()))
             {
                 var spell =
                     this.Spells.Where(
                         x =>
                         x.GetDamage(enemy) > enemy.Health && x.IsInRange(enemy)
-                        && Config.Instance["KillSteal" + x.Slot].IsActive()).MinOrDefault(x => x.GetDamage(enemy));
+                        && Config.Instance["KillSteal" + x.Slot].IsActive()
+                        && x.GetMissileArrivalTime(enemy) < Config.Instance["ETALimit"].GetValue<Slider>().Value)
+                        .MinOrDefault(x => x.GetDamage(enemy));
 
                 if (spell != null)
                 {

@@ -42,7 +42,7 @@
             Game.OnUpdate += this.Game_OnUpdate;
 
             Game.PrintChat(
-                "<font color=\"#E9259D\"><b>Snitched 3.0:</b></font> "
+                "<b><font color=\"#00AAFF\">S</font><font color=\"#f06DBD\">nitched</font> <font color=\"#00AAFF\">3.0</font></b> "
                 + "by <font color=\"#9400D3\"><b>ChewyMoon</b></font> Loaded!");
         }
 

@@ -120,6 +120,10 @@
             this.Menu.AddSubMenu(ksMenu);
 
             var miscMenu = new Menu("Miscellaneous Settings", "MiscSettings");
+            miscMenu.AddItem(
+                new MenuItem("ETALimit", "Missile Arrival Time Limit (MS)").SetValue(new Slider(3000, 0, 15000)));
+            miscMenu.AddItem(new MenuItem("DistanceLimit", "Distance Limit").SetValue(new Slider(5000, 0, 15000)));
+            miscMenu.AddItem(new MenuItem("StealFOW", "Steal in FOW").SetValue(false));
             miscMenu.AddItem(new MenuItem("DrawADPS", "Draw Average DPS").SetValue(true));
             this.Menu.AddSubMenu(miscMenu);
 
@@ -134,11 +138,16 @@
 
         #region Methods
 
+        /// <summary>
+        ///     Adds the spells to menu.
+        /// </summary>
+        /// <param name="rootMenu">The root menu.</param>
+        /// <param name="name">The name.</param>
         private static void AddSpellsToMenu(Menu rootMenu, string name)
         {
             var menu = rootMenu.AddSubMenu(new Menu("Spells", name + "Spells"));
             SpellLoader.GetUsableSpells()
-                .ForEach(x => menu.AddItem(new MenuItem(name + x.Slot, "Use " + x.Slot)).SetValue(true));
+                .ForEach(x => menu.AddItem(new MenuItem(name + x.Slot, "Use " + x.Slot)).SetValue(true).DontSave());
         }
 
         #endregion

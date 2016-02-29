@@ -165,7 +165,7 @@
 
             foreach (var blue in BlueBuffs.ToArray().Where(x => x.IsDead || !x.IsValid))
             {
-                BlueBuffs.Remove(blue);
+                BlueBuffs.RemoveAll(x => x.NetworkId == blue.NetworkId);
 
                 if (OnObjectiveDead != null)
                 {
@@ -175,7 +175,7 @@
 
             foreach (var red in RedBuffs.ToArray().Where(x => x.IsDead || !x.IsValid))
             {
-                RedBuffs.Remove(red);
+                RedBuffs.RemoveAll(x => x.NetworkId == red.NetworkId);
 
                 if (OnObjectiveDead != null)
                 {

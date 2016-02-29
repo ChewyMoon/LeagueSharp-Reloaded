@@ -29,14 +29,6 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         public void Load(EventArgs args)
         {
-            if (ObjectManager.Player.ChampionName == "Ezreal" || ObjectManager.Player.ChampionName == "Vayne")
-            {
-                Game.PrintChat(
-                    "<font color=\"#E9259D\"><b>Snitched Reloaded:</b></font> " + ObjectManager.Player.ChampionName
-                    + " is currently disabled due to a L# bug that will crash the game. Sorry about that.");
-                return;
-            }
-
             Config.Instance.CreateMenu();
 
             HealthPrediction.Load();
@@ -159,9 +151,21 @@
         /// <param name="type">The type.</param>
         private void StealObject(Obj_AI_Base unit, StealType type)
         {
+            if (ObjectManager.Player.Distance(unit) > Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
+            {
+                return;
+            }
+
+            if (!unit.IsVisible && !Config.Instance["StealFOW"].IsActive())
+            {
+                return;
+            }
+
             var spell =
                 this.Spells.Where(
-                    x => x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive())
+                    x =>
+                    x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive()
+                    && x.GetMissileArrivalTime(unit) < Config.Instance["ETALimit"].GetValue<Slider>().Value)
                     .MaxOrDefault(x => x.GetDamage(unit));
 
             if (spell == null)
@@ -169,8 +173,7 @@
                 return;
             }
 
-            var eta = ObjectManager.Player.Distance(unit) / spell.Speed + spell.Delay + (Game.Ping / 2f / 1000);
-            var healthPred = HealthPrediction.GetPredictedHealth(unit, eta);
+            var healthPred = HealthPrediction.GetPredictedHealth(unit, spell.GetMissileArrivalTime(unit));
 
             if (spell.GetDamage(unit) >= healthPred)
             {

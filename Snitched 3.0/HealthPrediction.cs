@@ -63,7 +63,7 @@
         /// <param name="unit">The unit.</param>
         public static void TrackObject(Obj_AI_Base unit)
         {
-            TrackedObjects[unit] = new HealthValues(unit.Health);
+            TrackedObjects[unit] = new HealthValues(unit.MaxHealth);
         }
 
         /// <summary>
@@ -121,19 +121,24 @@
                     continue;
                 }
 
-                // If the object regen'd erase all previous values
-                if (Math.Abs(obj.Key.Health - obj.Key.MaxHealth) < float.Epsilon)
+                if (!obj.Key.IsVisible)
+                {
+                    continue;
+                }
+
+                // If the object regen'd erase all previous values (Gives us negative values)
+                if (obj.Key.Health > obj.Value.LastHealth)
                 {
                     if (obj.Value.Health.Any())
                     {
                         obj.Value.Health.Clear();
-                        obj.Value.LastHealth = obj.Key.MaxHealth;
                     }
+
+                    obj.Value.LastHealth = obj.Key.Health;
 
                     continue;
                 }
 
-                Console.WriteLine("Updated damage");
                 obj.Value.Health.Add(obj.Value.LastHealth - obj.Key.Health);
                 obj.Value.LastHealth = obj.Key.Health;
             }
@@ -174,7 +179,7 @@
                     return 0;
                 }
 
-                return this.Health.Average();
+                return this.Health.Sum() / this.Health.Count;
             }
         }
 

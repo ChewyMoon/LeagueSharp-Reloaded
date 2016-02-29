@@ -8,9 +8,20 @@
     /// <summary>
     ///     Gets spells that can be used for Snitched.
     /// </summary>
-    internal class SpellLoader
+    internal static class SpellLoader
     {
         #region Public Methods and Operators
+
+        /// <summary>
+        ///     Gets the missile arrival time in seconds.
+        /// </summary>
+        /// <param name="spell">The spell.</param>
+        /// <param name="target">The target.</param>
+        /// <returns></returns>
+        public static float GetMissileArrivalTime(this Spell spell, Obj_AI_Base target)
+        {
+            return ObjectManager.Player.Distance(target) / spell.Speed + spell.Delay + Game.Ping / 2f / 1000;
+        }
 
         /// <summary>
         ///     Gets the usable spells.
@@ -19,7 +30,6 @@
         public static List<Spell> GetUsableSpells()
         {
             var slots = new[] { SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R };
-            var dummyTarget = new Obj_AI_Base();
             var usableSpells = new List<Spell>();
 
             foreach (var slot in slots)
@@ -30,9 +40,8 @@
 
                 if (targettingType != SpellDataTargetType.Unit
                     && (!targettingType.ToString().Contains("Location")
-                        || !(ObjectManager.Player.GetSpellDamage(dummyTarget, slot) > 0)))
+                        || !(ObjectManager.Player.GetSpellDamage(ObjectManager.Player, slot) > 0)))
                 {
-                    Game.PrintChat("Discared Spell {0}. Type: {1}", spellInst.Slot, spellInst.SData.TargettingType);
                     continue;
                 }
 
@@ -55,7 +64,6 @@
                 }
 
                 usableSpells.Add(spell);
-                Game.PrintChat("Added Spell {0}. Type: {1}.", spellInst.Slot, spellInst.SData.TargettingType);
             }
 
             return usableSpells;

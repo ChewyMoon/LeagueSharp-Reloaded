@@ -199,7 +199,7 @@
         /// </summary>
         private static void CreateMenu()
         {
-            Menu = new Menu("Luxorious", "ChewyLUXFF", true);
+            Menu = new Menu("MoonLux", "ChewyLUXFF", true);
 
             var orbwalkerMenu = new Menu("Orbwalker Settings", "Orbwalker");
             Orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);

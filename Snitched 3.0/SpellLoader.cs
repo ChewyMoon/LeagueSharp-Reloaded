@@ -1,15 +1,35 @@
 ﻿namespace Snitched
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     using LeagueSharp;
     using LeagueSharp.Common;
+    using LeagueSharp.SDK;
+
+    using CollisionableObjects = LeagueSharp.SDK.CollisionableObjects;
+    using SkillshotType = LeagueSharp.Common.SkillshotType;
+    using Spell = LeagueSharp.Common.Spell;
 
     /// <summary>
     ///     Gets spells that can be used for Snitched.
     /// </summary>
     internal static class SpellLoader
     {
+        #region Static Fields
+
+        /// <summary>
+        ///     The disallowed spelltags
+        /// </summary>
+        private static readonly SpellTags[] DisallowedSpelltags = { SpellTags.Blink, SpellTags.Dash };
+
+        /// <summary>
+        ///     The whitelisted spells
+        /// </summary>
+        private static readonly string[] WhitelistedSpells = { "EzrealTrueshotBarrage" };
+
+        #endregion
+
         #region Public Methods and Operators
 
         /// <summary>
@@ -20,7 +40,7 @@
         /// <returns></returns>
         public static float GetMissileArrivalTime(this Spell spell, Obj_AI_Base target)
         {
-            return ObjectManager.Player.Distance(target) / spell.Speed + spell.Delay + Game.Ping / 2f / 1000;
+            return target.Distance(ObjectManager.Player) / spell.Speed + spell.Delay + Game.Ping / 2f / 1000;
         }
 
         /// <summary>
@@ -32,35 +52,65 @@
             var slots = new[] { SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R };
             var usableSpells = new List<Spell>();
 
-            foreach (var slot in slots)
+            foreach (var spellEntry in
+                slots.Select(x => SpellDatabase.GetByName(ObjectManager.Player.GetSpell(x).SData.Name.ToLower()))
+                    .Where(
+                        x =>
+                        x.SpellTags != null && x.CastType != null
+                        && (x.SpellTags.Any(y => y == SpellTags.Damage)
+                            && !x.SpellTags.Any(y => DisallowedSpelltags.Any(z => y == z))
+                            && x.CastType.Any(y => y == CastType.Position)
+                            && x.CollisionObjects.Contains(CollisionableObjects.Minions))
+                        || WhitelistedSpells.Any(y => y.Equals(x.MissileSpellName))))
             {
-                var spellInst = ObjectManager.Player.GetSpell(slot);
-                var targettingType = spellInst.SData.TargettingType;
-                var sdata = spellInst.SData;
+                var spell = new Spell(spellEntry.Slot, spellEntry.Range);
 
-                if (targettingType != SpellDataTargetType.Unit
-                    && (!targettingType.ToString().Contains("Location")
-                        || !(ObjectManager.Player.GetSpellDamage(ObjectManager.Player, slot) > 0)))
+                switch (spellEntry.SpellType)
                 {
-                    continue;
-                }
-
-                var spell = new Spell(slot, sdata.CastRange);
-
-                if (targettingType != SpellDataTargetType.Unit)
-                {
-                    spell.SetSkillshot(
-                        sdata.CastFrame / 30f,
-                        sdata.LineWidth.Equals(0) ? sdata.CastRadius : sdata.LineWidth,
-                        sdata.MissileSpeed,
-                        sdata.HaveHitBone,
-                        targettingType == SpellDataTargetType.Cone
-                            ? SkillshotType.SkillshotCone
-                            : sdata.CastRadius > 0 ? SkillshotType.SkillshotCircle : SkillshotType.SkillshotLine);
-                }
-                else if (targettingType == SpellDataTargetType.Unit)
-                {
-                    spell.SetTargetted(sdata.CastFrame / 30f, sdata.MissileSpeed);
+                    case SpellType.SkillshotMissileCircle:
+                    case SpellType.SkillshotRing:
+                    case SpellType.SkillshotCircle:
+                    case SpellType.SkillshotArc:
+                    case SpellType.SkillshotMissileArc:
+                        spell.SetSkillshot(
+                            spellEntry.Delay / 1000f,
+                            spellEntry.Radius,
+                            spellEntry.MissileSpeed,
+                            spellEntry.CollisionObjects.Any(x => x != CollisionableObjects.YasuoWall),
+                            SkillshotType.SkillshotCircle);
+                        break;
+                    case SpellType.SkillshotMissileLine:
+                    case SpellType.SkillshotLine:
+                        spell.SetSkillshot(
+                            spellEntry.Delay / 1000f,
+                            spellEntry.Width,
+                            spellEntry.MissileSpeed,
+                            spellEntry.CollisionObjects.Any(x => x != CollisionableObjects.YasuoWall),
+                            SkillshotType.SkillshotLine);
+                        break;
+                    case SpellType.SkillshotCone:
+                    case SpellType.SkillshotMissileCone:
+                        spell.SetSkillshot(
+                            spellEntry.Delay / 1000f,
+                            spellEntry.Radius,
+                            spellEntry.MissileSpeed,
+                            spellEntry.CollisionObjects.Any(x => x != CollisionableObjects.YasuoWall),
+                            SkillshotType.SkillshotLine);
+                        break;
+                    case SpellType.Targeted:
+                    case SpellType.TargetedMissile:
+                        spell.SetTargetted(spellEntry.Delay / 1000f, spellEntry.MissileSpeed);
+                        break;
+                    case SpellType.Position:
+                        spell.SetSkillshot(
+                            spellEntry.Delay / 1000f,
+                            spellEntry.Width,
+                            spellEntry.MissileSpeed,
+                            spellEntry.CollisionObjects.Any(x => x != CollisionableObjects.YasuoWall),
+                            SkillshotType.SkillshotLine);
+                        break;
+                    default:
+                        continue;
                 }
 
                 usableSpells.Add(spell);

@@ -6,6 +6,11 @@
 
     using LeagueSharp;
     using LeagueSharp.Common;
+    using LeagueSharp.SDK;
+
+    using Damage = LeagueSharp.SDK.Core.Wrappers.Damages.Damage;
+    using Geometry = LeagueSharp.Common.Geometry;
+    using Spell = LeagueSharp.Common.Spell;
 
     internal class Snitched
     {
@@ -29,6 +34,8 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         public void Load(EventArgs args)
         {
+            Variables.Orbwalker.Enabled = false;
+
             Config.Instance.CreateMenu();
 
             HealthPrediction.Load();
@@ -108,8 +115,15 @@
         /// <param name="type">The type.</param>
         private void HandleObjective(Obj_AI_Base unit, ObjectiveType type)
         {
-            if (!(Config.Instance["SmartObjectiveSteal"].IsActive() && unit.CountEnemiesInRange(500) > 0)
-                || !Config.Instance["StealObjectiveKeyBind"].IsActive() || !Config.Instance["Steal" + type].IsActive())
+            if ((Config.Instance["SmartObjectiveSteal"].IsActive()
+                 && !Config.Instance["StealObjectiveKeyBind"].IsActive() && unit.CountAlliesInRange(500) != 0)
+                || !Config.Instance["StealObjectiveKeyBind"].IsActive())
+            {
+                return;
+
+            }
+
+            if (!Config.Instance["Steal" + type].IsActive())
             {
                 return;
             }
@@ -131,16 +145,18 @@
             foreach (var enemy in
                 HeroManager.Enemies.Where(
                     x =>
-                    x.IsValidTarget(Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
+                    Utility.IsValidTarget(x, Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
                     && Config.Instance["KS" + x.ChampionName].IsActive()))
             {
                 var spell =
-                    this.Spells.Where(
-                        x =>
-                        x.GetDamage(enemy) > enemy.Health && x.IsInRange(enemy)
-                        && Config.Instance["KillSteal" + x.Slot].IsActive()
-                        && x.GetMissileArrivalTime(enemy) < Config.Instance["ETALimit"].GetValue<Slider>().Value)
-                        .MinOrDefault(x => x.GetDamage(enemy));
+                    EnumerableExtensions.MinOrDefault(
+                        this.Spells.Where(
+                            x =>
+                            Damage.GetSpellDamage(ObjectManager.Player, enemy, x.Slot) > enemy.Health
+                            && x.IsInRange(enemy) && Config.Instance["KillSteal" + x.Slot].IsActive()
+                            && x.GetMissileArrivalTime(enemy)
+                            < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f),
+                        x => x.GetDamage(enemy));
 
                 if (spell != null)
                 {
@@ -156,7 +172,8 @@
         /// <param name="type">The type.</param>
         private void StealObject(Obj_AI_Base unit, StealType type)
         {
-            if (ObjectManager.Player.Distance(unit) > Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
+            if (Geometry.Distance(ObjectManager.Player, unit)
+                > Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
             {
                 return;
             }
@@ -167,11 +184,12 @@
             }
 
             var spell =
-                this.Spells.Where(
-                    x =>
-                    x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive()
-                    && x.GetMissileArrivalTime(unit) < Config.Instance["ETALimit"].GetValue<Slider>().Value)
-                    .MaxOrDefault(x => x.GetDamage(unit));
+                EnumerableExtensions.MaxOrDefault(
+                    this.Spells.Where(
+                        x =>
+                        x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive()
+                        && x.GetMissileArrivalTime(unit) < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f),
+                    x => Damage.GetSpellDamage(ObjectManager.Player, unit, x.Slot));
 
             if (spell == null)
             {

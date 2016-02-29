@@ -121,11 +121,6 @@
                     continue;
                 }
 
-                if (!obj.Key.IsVisible)
-                {
-                    continue;
-                }
-
                 // If the object regen'd erase all previous values (Gives us negative values)
                 if (obj.Key.Health > obj.Value.LastHealth)
                 {
@@ -136,6 +131,11 @@
 
                     obj.Value.LastHealth = obj.Key.Health;
 
+                    continue;
+                }
+
+                if (!obj.Key.IsVisible)
+                {
                     continue;
                 }
 

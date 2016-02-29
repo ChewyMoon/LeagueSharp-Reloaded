@@ -105,7 +105,7 @@
                     .SetTooltip(
                         "Checks for enemies the dragon/baron pit, and if there is none it will attempt to steal. Overrides keybind."));
             objectiveMenu.AddItem(
-                new MenuItem("StealObjectiveKeyBind", "Steal Objectives").SetValue(new KeyBind(82, KeyBindType.Press)));
+                new MenuItem("StealObjectiveKeyBind", "Steal Objectives").SetValue(new KeyBind(90, KeyBindType.Press)));
             objectiveMenu.Item("StealObjectiveKeyBind").Permashow();
             this.Menu.AddSubMenu(objectiveMenu);
 

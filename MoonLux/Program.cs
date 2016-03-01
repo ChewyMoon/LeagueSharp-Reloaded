@@ -122,6 +122,11 @@
             var source = ObjectManager.GetUnitByNetworkId<GameObject>(args.SourceNetworkId);
             var obj = ObjectManager.GetUnitByNetworkId<GameObject>(args.TargetNetworkId);
 
+            if (source == null || obj == null)
+            {
+                return;
+            }
+
             if (obj.Type != GameObjectType.obj_AI_Hero || source.Type != GameObjectType.obj_AI_Hero)
             {
                 return;

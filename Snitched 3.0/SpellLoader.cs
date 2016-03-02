@@ -54,9 +54,10 @@
 
             foreach (var spellEntry in
                 slots.Select(x => SpellDatabase.GetByName(ObjectManager.Player.GetSpell(x).SData.Name.ToLower()))
+                    .Where(x => x != null)
                     .Where(
                         x =>
-                        x.SpellTags != null && x.CastType != null
+                        x.SpellTags != null && x.CastType != null && x.CollisionObjects != null
                         && (x.SpellTags.Any(y => y == SpellTags.Damage)
                             && !x.SpellTags.Any(y => DisallowedSpelltags.Any(z => y == z))
                             && x.CastType.Any(y => y == CastType.Position)

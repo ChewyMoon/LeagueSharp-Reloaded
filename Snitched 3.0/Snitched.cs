@@ -120,7 +120,6 @@
                 || !Config.Instance["StealObjectiveKeyBind"].IsActive())
             {
                 return;
-
             }
 
             if (!Config.Instance["Steal" + type].IsActive())

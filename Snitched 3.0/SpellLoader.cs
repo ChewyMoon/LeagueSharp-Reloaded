@@ -60,8 +60,7 @@
                         x.SpellTags != null && x.CastType != null && x.CollisionObjects != null
                         && (x.SpellTags.Any(y => y == SpellTags.Damage)
                             && !x.SpellTags.Any(y => DisallowedSpelltags.Any(z => y == z))
-                            && x.CastType.Any(y => y == CastType.Position)
-                            && x.CollisionObjects.Contains(CollisionableObjects.Minions))
+                            && x.CastType.Any(y => y == CastType.Position))
                         || WhitelistedSpells.Any(y => y.Equals(x.MissileSpellName))))
             {
                 var spell = new Spell(spellEntry.Slot, spellEntry.Range);

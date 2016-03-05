@@ -7,12 +7,22 @@
     using System.Linq;
 
     using LeagueSharp;
+    using LeagueSharp.SDK;
 
     /// <summary>
     ///     Predicts health by getting the average damage per tick. To be used on Objectives ONLY.
     /// </summary>
     internal class HealthPrediction
     {
+        #region Constants
+
+        /// <summary>
+        ///     The multiplier
+        /// </summary>
+        private const float Multiplier = 1;
+
+        #endregion
+
         #region Static Fields
 
         /// <summary>
@@ -40,12 +50,13 @@
         {
             HealthValues healthValues;
 
-            if (!TrackedObjects.TryGetValue(unit, out healthValues))
+            if (TrackedObjects.TryGetValue(unit, out healthValues))
             {
-                return unit.Health;
+                return unit.Health - healthValues.AverageDamage * Multiplier * seconds;
             }
 
-            return unit.Health - healthValues.AverageDamagePerSecond * seconds;
+            TrackObject(unit);
+            return unit.Health;
         }
 
         /// <summary>
@@ -93,7 +104,8 @@
             foreach (var trackedobj in TrackedObjects)
             {
                 var wts = Drawing.WorldToScreen(trackedobj.Key.Position);
-                var text = "Avg DPS: " + trackedobj.Value.AverageDamagePerSecond.ToString(CultureInfo.InvariantCulture);
+                var text = "Avg DPS: "
+                           + (trackedobj.Value.AverageDamage * Multiplier).ToString(CultureInfo.InvariantCulture);
                 var size = Drawing.GetTextExtent(text);
 
                 Drawing.DrawText(wts.X - size.Width / 2f, wts.Y, Color.BlueViolet, text);
@@ -106,7 +118,7 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void Game_OnUpdate(EventArgs args)
         {
-            if (Game.Time - lastClockUpdate < 1f)
+            if (Game.Time - lastClockUpdate < 1f / Multiplier)
             {
                 return;
             }
@@ -122,13 +134,9 @@
                 }
 
                 // If the object regen'd erase all previous values (Gives us negative values)
-                if (obj.Key.Health > obj.Value.LastHealth)
+                if (obj.Key.Health > obj.Value.LastHealth || Math.Abs(obj.Key.Health - obj.Key.MaxHealth) < float.Epsilon)
                 {
-                    if (obj.Value.Health.Any())
-                    {
-                        obj.Value.Health.Clear();
-                    }
-
+                    obj.Value.Health.Clear();
                     obj.Value.LastHealth = obj.Key.Health;
 
                     continue;
@@ -170,7 +178,7 @@
         /// <value>
         ///     The average damage per tick.
         /// </value>
-        public float AverageDamagePerSecond
+        public float AverageDamage
         {
             get
             {
@@ -179,7 +187,7 @@
                     return 0;
                 }
 
-                return this.Health.Sum() / this.Health.Count;
+                return this.Health.Where(x => Math.Abs(x) > float.Epsilon).Sum() / this.Health.Count;
             }
         }
 

@@ -669,7 +669,7 @@
 
                 if (baron != null)
                 {
-                    var healthPred = HealthPrediction.GetHealthPrediction(baron, (int)(R.Delay * 1000));
+                    var healthPred = HealthPrediction.GetHealthPrediction(baron, (int)(R.Delay * 1000) + Game.Ping / 2);
 
                     if (R.GetDamage(baron) >= healthPred)
                     {
@@ -685,7 +685,7 @@
 
                 if (dragon != null)
                 {
-                    var healthPred = HealthPrediction.GetHealthPrediction(dragon, (int)(R.Delay * 1000));
+                    var healthPred = HealthPrediction.GetHealthPrediction(dragon, (int)(R.Delay * 1000) + Game.Ping / 2);
 
                     if (R.GetDamage(dragon) >= healthPred)
                     {
@@ -703,7 +703,7 @@
                 {
                     var blueBuff =
                         blueBuffs.Where(
-                            x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000)))
+                            x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000) + Game.Ping / 2))
                             .FirstOrDefault(
                                 x =>
                                 (x.CountAlliesInRange(1000) == 0 && stealBuffMode == 0)
@@ -730,7 +730,7 @@
             }
 
             var redBuff =
-                redBuffs.Where(x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000)))
+                redBuffs.Where(x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000) + Game.Ping / 2))
                     .FirstOrDefault(
                         x =>
                         (x.CountAlliesInRange(1000) == 0 && stealBuffMode == 0)

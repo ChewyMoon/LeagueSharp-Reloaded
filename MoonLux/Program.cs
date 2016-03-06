@@ -524,7 +524,7 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void Drawing_OnEndScene(EventArgs args)
         {
-            if (!Menu.Item("DrawR").IsActive())
+            if (!Menu.Item("DrawR").IsActive() || !R.IsReady())
             {
                 return;
             }
@@ -555,7 +555,7 @@
                     bonScreen.X,
                     bonScreen.Y,
                     1,
-                    R.IsReady() ? Color.Aqua : Color.Red);
+                    Color.Aqua);
             }
         }
 

@@ -593,6 +593,13 @@
                 DoHarass();
             }
 
+            if (ECasted && EObject.Position.CountEnemiesInRange(350) >= 1
+                && ObjectManager.Get<Obj_AI_Hero>()
+                       .Count(x => x.IsValidTarget(350, true, EObject.Position) && !x.HasPassive()) >= 1)
+            {
+                E.Cast();
+            }
+
             KillSteal();
             JungleKillSteal();
         }

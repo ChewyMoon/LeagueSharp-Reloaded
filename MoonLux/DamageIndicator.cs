@@ -125,7 +125,7 @@
                 if (damage > unit.Health)
                 {
                     Text.X = (int)barPos.X + XOffset;
-                    Text.Y = (int)barPos.Y + YOffset - 13;
+                    Text.Y = (int)barPos.Y + YOffset - 15;
                     Text.text = "Killable: " + (unit.Health - damage);
                     Text.OnEndScene();
                 }

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonLux", "MoonLux\MoonLux.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snitched 3.0", "Snitched 3.0\Snitched 3.0.csproj", "{0E68CC41-4B0A-4575-890F-D8FC41B462FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlwaysVisible", "AlwaysVisible\AlwaysVisible.csproj", "{EE0D8D61-9D33-4C91-99DC-48A0773A4F60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0E68CC41-4B0A-4575-890F-D8FC41B462FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E68CC41-4B0A-4575-890F-D8FC41B462FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E68CC41-4B0A-4575-890F-D8FC41B462FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE0D8D61-9D33-4C91-99DC-48A0773A4F60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE0D8D61-9D33-4C91-99DC-48A0773A4F60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE0D8D61-9D33-4C91-99DC-48A0773A4F60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE0D8D61-9D33-4C91-99DC-48A0773A4F60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

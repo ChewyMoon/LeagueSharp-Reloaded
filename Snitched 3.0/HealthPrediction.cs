@@ -7,7 +7,6 @@
     using System.Linq;
 
     using LeagueSharp;
-    using LeagueSharp.SDK;
 
     /// <summary>
     ///     Predicts health by getting the average damage per tick. To be used on Objectives ONLY.

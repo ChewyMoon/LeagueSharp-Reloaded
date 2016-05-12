@@ -8,7 +8,7 @@
     using LeagueSharp.Common;
     using LeagueSharp.SDK;
 
-    using Damage = LeagueSharp.SDK.Core.Wrappers.Damages.Damage;
+    using Damage = LeagueSharp.SDK.Damage;
     using Geometry = LeagueSharp.Common.Geometry;
     using Spell = LeagueSharp.Common.Spell;
 
@@ -157,10 +157,7 @@
                             < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f),
                         x => x.GetDamage(enemy));
 
-                if (spell != null)
-                {
-                    spell.Cast(enemy);
-                }
+                spell?.Cast(enemy);
             }
         }
 

@@ -88,10 +88,7 @@
         /// <param name="type">The type.</param>
         private static void FireObjectCreatedEvent(Obj_AI_Base unit, ObjectiveType type)
         {
-            if (OnObjectiveCreated != null)
-            {
-                OnObjectiveCreated(unit, type);
-            }
+            OnObjectiveCreated?.Invoke(unit, type);
         }
 
         /// <summary>
@@ -147,40 +144,28 @@
             {
                 Baron = null;
 
-                if (OnObjectiveDead != null)
-                {
-                    OnObjectiveDead(Baron, ObjectiveType.Baron);
-                }
+                OnObjectiveDead?.Invoke(Baron, ObjectiveType.Baron);
             }
 
             if (Dragon != null && (Dragon.IsDead || !Dragon.IsValid))
             {
                 Dragon = null;
 
-                if (OnObjectiveDead != null)
-                {
-                    OnObjectiveDead(Dragon, ObjectiveType.Dragon);
-                }
+                OnObjectiveDead?.Invoke(Dragon, ObjectiveType.Dragon);
             }
 
             foreach (var blue in BlueBuffs.ToArray().Where(x => x.IsDead || !x.IsValid))
             {
                 BlueBuffs.RemoveAll(x => x.NetworkId == blue.NetworkId);
 
-                if (OnObjectiveDead != null)
-                {
-                    OnObjectiveDead(blue, ObjectiveType.Blue);
-                }
+                OnObjectiveDead?.Invoke(blue, ObjectiveType.Blue);
             }
 
             foreach (var red in RedBuffs.ToArray().Where(x => x.IsDead || !x.IsValid))
             {
                 RedBuffs.RemoveAll(x => x.NetworkId == red.NetworkId);
 
-                if (OnObjectiveDead != null)
-                {
-                    OnObjectiveDead(red, ObjectiveType.Red);
-                }
+                OnObjectiveDead?.Invoke(red, ObjectiveType.Red);
             }
         }
 

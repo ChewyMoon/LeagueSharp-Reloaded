@@ -5,9 +5,10 @@
 
     using LeagueSharp;
     using LeagueSharp.Common;
+    using LeagueSharp.Data.Enumerations;
     using LeagueSharp.SDK;
 
-    using CollisionableObjects = LeagueSharp.SDK.CollisionableObjects;
+    using CollisionableObjects = LeagueSharp.Data.Enumerations.CollisionableObjects;
     using SkillshotType = LeagueSharp.Common.SkillshotType;
     using Spell = LeagueSharp.Common.Spell;
 

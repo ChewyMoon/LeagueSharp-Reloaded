@@ -112,7 +112,7 @@
                 FireObjectCreatedEvent(obj, ObjectiveType.Baron);
             }
 
-            if (obj.CharData.BaseSkinName == "SRU_Dragon")
+            if (obj.CharData.BaseSkinName.Contains("SRU_Dragon"))
             {
                 Dragon = obj;
 

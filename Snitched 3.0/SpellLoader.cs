@@ -5,8 +5,9 @@
 
     using LeagueSharp;
     using LeagueSharp.Common;
+    using LeagueSharp.Data;
+    using LeagueSharp.Data.DataTypes;
     using LeagueSharp.Data.Enumerations;
-    using LeagueSharp.SDK;
 
     using CollisionableObjects = LeagueSharp.Data.Enumerations.CollisionableObjects;
     using SkillshotType = LeagueSharp.Common.SkillshotType;
@@ -54,7 +55,7 @@
             var usableSpells = new List<Spell>();
 
             foreach (var spellEntry in
-                slots.Select(x => SpellDatabase.GetByName(ObjectManager.Player.GetSpell(x).SData.Name.ToLower()))
+                slots.Select(x => Data.Get<SpellDatabase>().GetByName(ObjectManager.Player.GetSpell(x).SData.Name.ToLower()))
                     .Where(x => x != null)
                     .Where(
                         x =>

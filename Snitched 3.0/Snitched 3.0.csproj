@@ -41,9 +41,6 @@
     <Reference Include="LeagueSharp.Data">
       <HintPath>C:\Program Files (x86)\LeagueSharp\System\LeagueSharp.Data.dll</HintPath>
     </Reference>
-    <Reference Include="LeagueSharp.SDKEx">
-      <HintPath>C:\Program Files (x86)\LeagueSharp\System\LeagueSharp.SDKEx.dll</HintPath>
-    </Reference>
     <Reference Include="SharpDX, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\LeagueSharp\System\SharpDX.dll</HintPath>

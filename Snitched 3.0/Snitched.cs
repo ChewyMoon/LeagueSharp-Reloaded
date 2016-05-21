@@ -34,8 +34,6 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         public void Load(EventArgs args)
         {
-            Variables.Orbwalker.Enabled = false;
-
             Config.Instance.CreateMenu();
 
             HealthPrediction.Load();

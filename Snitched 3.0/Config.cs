@@ -72,13 +72,7 @@
         /// </value>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public MenuItem this[string name]
-        {
-            get
-            {
-                return this.Menu.Item(name);
-            }
-        }
+        public MenuItem this[string name] => this.Menu.Item(name);
 
         #endregion
 

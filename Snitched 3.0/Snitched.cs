@@ -6,10 +6,7 @@
 
     using LeagueSharp;
     using LeagueSharp.Common;
-    using LeagueSharp.SDK;
 
-    using Damage = LeagueSharp.SDK.Damage;
-    using Geometry = LeagueSharp.Common.Geometry;
     using Spell = LeagueSharp.Common.Spell;
 
     internal class Snitched
@@ -142,18 +139,16 @@
             foreach (var enemy in
                 HeroManager.Enemies.Where(
                     x =>
-                    Utility.IsValidTarget(x, Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
+                    x.IsValidTarget(Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
                     && Config.Instance["KS" + x.ChampionName].IsActive()))
             {
                 var spell =
-                    EnumerableExtensions.MinOrDefault(
-                        this.Spells.Where(
-                            x =>
-                            Damage.GetSpellDamage(ObjectManager.Player, enemy, x.Slot) > enemy.Health
-                            && x.IsInRange(enemy) && Config.Instance["KillSteal" + x.Slot].IsActive()
-                            && x.GetMissileArrivalTime(enemy)
-                            < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f),
-                        x => x.GetDamage(enemy));
+                    this.Spells.Where(
+                        x =>
+                        ObjectManager.Player.GetSpellDamage(enemy, x.Slot) > enemy.Health
+                        && x.IsInRange(enemy) && Config.Instance["KillSteal" + x.Slot].IsActive()
+                        && x.GetMissileArrivalTime(enemy)
+                        < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f).MinOrDefault(x => x.GetDamage(enemy));
 
                 spell?.Cast(enemy);
             }
@@ -166,7 +161,7 @@
         /// <param name="type">The type.</param>
         private void StealObject(Obj_AI_Base unit, StealType type)
         {
-            if (Geometry.Distance(ObjectManager.Player, unit)
+            if (ObjectManager.Player.Distance(unit)
                 > Config.Instance["DistanceLimit"].GetValue<Slider>().Value)
             {
                 return;
@@ -178,12 +173,10 @@
             }
 
             var spell =
-                EnumerableExtensions.MaxOrDefault(
-                    this.Spells.Where(
-                        x =>
-                        x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive()
-                        && x.GetMissileArrivalTime(unit) < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f),
-                    x => Damage.GetSpellDamage(ObjectManager.Player, unit, x.Slot));
+                this.Spells.Where(
+                    x =>
+                    x.IsReady() && x.IsInRange(unit) && Config.Instance[type.ToString() + x.Slot].IsActive()
+                    && x.GetMissileArrivalTime(unit) < Config.Instance["ETALimit"].GetValue<Slider>().Value / 1000f).MaxOrDefault(x => ObjectManager.Player.GetSpellDamage(unit, x.Slot));
 
             if (spell == null)
             {

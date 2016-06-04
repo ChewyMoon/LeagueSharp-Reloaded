@@ -38,19 +38,7 @@
         /// <value>
         ///     The instance.
         /// </value>
-        public static Config Instance
-        {
-            get
-            {
-                if (instance != null)
-                {
-                    return instance;
-                }
-
-                instance = new Config();
-                return instance;
-            }
-        }
+        public static Config Instance => instance ?? (instance = new Config());
 
         /// <summary>
         ///     Gets or sets the menu.

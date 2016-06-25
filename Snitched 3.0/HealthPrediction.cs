@@ -107,7 +107,7 @@
                            + (trackedobj.Value.AverageDamage * Multiplier).ToString(CultureInfo.InvariantCulture);
                 var size = Drawing.GetTextExtent(text);
 
-                Drawing.DrawText(wts.X - size.Width / 2f, wts.Y, Color.BlueViolet, text);
+                Drawing.DrawText(wts.X - (size.Width / 2f), wts.Y, Color.BlueViolet, text);
             }
         }
 
@@ -137,12 +137,12 @@
                 {
                     obj.Value.Health.Clear();
                     obj.Value.LastHealth = obj.Key.Health;
-
                     continue;
                 }
 
                 if (!obj.Key.IsVisible)
                 {
+                    obj.Value.LastHealth -= obj.Value.AverageDamage;
                     continue;
                 }
 
@@ -159,8 +159,9 @@
         #region Constructors and Destructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="HealthValues" /> class.
+        /// Initializes a new instance of the <see cref="HealthValues" /> class.
         /// </summary>
+        /// <param name="health">The health.</param>
         public HealthValues(float health)
         {
             this.Health = new List<float>();

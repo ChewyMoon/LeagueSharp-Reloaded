@@ -30,14 +30,14 @@
         /// <value>
         ///     <c>true</c> if the E spell was casted; otherwise, <c>false</c>.
         /// </value>
-        private static bool ECasted
-        {
-            get
-            {
-                return Player.HasBuff("LuxLightStrikeKugel") || EObject != null;
-            }
-        }
+        private static bool ECasted => Player.HasBuff("LuxLightStrikeKugel") || EObject != null;
 
+        /// <summary>
+        ///     Gets or sets the e object.
+        /// </summary>
+        /// <value>
+        ///     The e object.
+        /// </value>
         private static GameObject EObject { get; set; }
 
         /// <summary>
@@ -62,13 +62,7 @@
         /// <value>
         ///     The player.
         /// </value>
-        private static Obj_AI_Hero Player
-        {
-            get
-            {
-                return ObjectManager.Player;
-            }
-        }
+        private static Obj_AI_Hero Player => ObjectManager.Player;
 
         /// <summary>
         ///     Gets or sets the q.
@@ -134,8 +128,7 @@
 
             var hero = (Obj_AI_Hero)obj;
 
-            if (hero.IsEnemy || (!hero.IsMe && !W.IsInRange(obj))
-                || !Menu.Item(string.Format("{0}", hero.ChampionName)).IsActive())
+            if (hero.IsEnemy || (!hero.IsMe && !W.IsInRange(obj)) || !Menu.Item($"{hero.ChampionName}").IsActive())
             {
                 return;
             }
@@ -144,6 +137,23 @@
                 || (hero.HealthPercent < Menu.Item("ASHealthPercent").GetValue<Slider>().Value))
             {
                 W.Cast(W.GetPrediction(hero).CastPosition);
+            }
+        }
+
+        /// <summary>
+        ///     Automaticly shields allies with low health.
+        /// </summary>
+        private static void AutoShield()
+        {
+            foreach (
+                var hero in
+                    HeroManager.Allies.Where(
+                        x => !x.IsEnemy && (x.IsMe || W.IsInRange(x)) && Menu.Item(x.ChampionName).IsActive()))
+            {
+                if (hero.HealthPercent < Menu.Item("ASHealthPercent").GetValue<Slider>().Value)
+                {
+                    W.Cast(W.GetPrediction(hero).CastPosition);
+                }
             }
         }
 
@@ -177,14 +187,14 @@
         ///     Casts the q.
         /// </summary>
         /// <param name="target">The target.</param>
-        private static void CastQ(Obj_AI_Hero target)
+        private static void CastQ(Obj_AI_Base target)
         {
             if (Menu.Item("QThroughMinions").IsActive())
             {
                 var prediction = Q.GetPrediction(target);
                 var objects = Q.GetCollision(
-                    Player.ServerPosition.To2D(),
-                    new List<Vector2>() { prediction.CastPosition.To2D() });
+                    Player.ServerPosition.To2D(), 
+                    new List<Vector2> { prediction.CastPosition.To2D() });
 
                 if (objects.Count == 1 || (objects.Count == 1 && objects.ElementAt(0).IsChampion())
                     || objects.Count <= 1
@@ -390,6 +400,7 @@
                     {
                         R.Cast(target);
                     }
+
                     break;
             }
         }
@@ -536,8 +547,8 @@
                 var angle = i * Math.PI * 2 / 30;
                 pointList.Add(
                     new Vector3(
-                        Player.Position.X + R.Range * (float)Math.Cos(angle),
-                        Player.Position.Y + R.Range * (float)Math.Sin(angle),
+                        Player.Position.X + R.Range * (float)Math.Cos(angle), 
+                        Player.Position.Y + R.Range * (float)Math.Sin(angle), 
                         Player.Position.Z));
             }
 
@@ -549,13 +560,7 @@
                 var aonScreen = Drawing.WorldToMinimap(a);
                 var bonScreen = Drawing.WorldToMinimap(b);
 
-                Drawing.DrawLine(
-                    aonScreen.X,
-                    aonScreen.Y,
-                    bonScreen.X,
-                    bonScreen.Y,
-                    1,
-                    Color.Aqua);
+                Drawing.DrawLine(aonScreen.X, aonScreen.Y, bonScreen.X, bonScreen.Y, 1, Color.Aqua);
             }
         }
 
@@ -602,6 +607,7 @@
 
             KillSteal();
             JungleKillSteal();
+            AutoShield();
         }
 
         /// <summary>
@@ -710,7 +716,9 @@
                 {
                     var blueBuff =
                         blueBuffs.Where(
-                            x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000) + Game.Ping / 2))
+                            x =>
+                            R.GetDamage(x)
+                            > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000) + Game.Ping / 2))
                             .FirstOrDefault(
                                 x =>
                                 (x.CountAlliesInRange(1000) == 0 && stealBuffMode == 0)
@@ -737,7 +745,8 @@
             }
 
             var redBuff =
-                redBuffs.Where(x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000) + Game.Ping / 2))
+                redBuffs.Where(
+                    x => R.GetDamage(x) > HealthPrediction.GetHealthPrediction(x, (int)(R.Delay * 1000) + Game.Ping / 2))
                     .FirstOrDefault(
                         x =>
                         (x.CountAlliesInRange(1000) == 0 && stealBuffMode == 0)
@@ -780,7 +789,8 @@
         ///     The entry point of the application.
         /// </summary>
         /// <param name="args">The arguments.</param>
-        static void Main(string[] args)
+        // ReSharper disable once UnusedParameter.Local
+        private static void Main(string[] args)
         {
             CustomEvents.Game.OnGameLoad += GameOnOnGameLoad;
         }
@@ -802,8 +812,8 @@
             return
                 (float)
                 ObjectManager.Player.CalcDamage(
-                    target,
-                    Damage.DamageType.Magical,
+                    target, 
+                    Damage.DamageType.Magical, 
                     10 + (8 * ObjectManager.Player.Level) + (0.2 * ObjectManager.Player.TotalMagicalDamage));
         }
 

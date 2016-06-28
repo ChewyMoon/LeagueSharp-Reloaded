@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlwaysVisible", "AlwaysVisi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cupcake", "Cupcake\Cupcake.csproj", "{BAB015A0-649C-4EA2-96EC-C01703B0C63B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonExperience", "MoonExperience\MoonExperience.csproj", "{A1E26660-5ACF-4B32-9202-026E74C14B3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{BAB015A0-649C-4EA2-96EC-C01703B0C63B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAB015A0-649C-4EA2-96EC-C01703B0C63B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAB015A0-649C-4EA2-96EC-C01703B0C63B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1E26660-5ACF-4B32-9202-026E74C14B3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1E26660-5ACF-4B32-9202-026E74C14B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1E26660-5ACF-4B32-9202-026E74C14B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1E26660-5ACF-4B32-9202-026E74C14B3C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

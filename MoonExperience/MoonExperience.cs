@@ -107,6 +107,8 @@
             this.ExperienceTracker.Load();
 
             this.ExperiencePerChamp = new Dictionary<int, float>();
+            this.LastTimeNotified = new Dictionary<int, float>();
+            this.EnemiesNearby = new Dictionary<int, int>();
 
             for (var i = 2; i <= HeroManager.Enemies.Count; i++)
             {

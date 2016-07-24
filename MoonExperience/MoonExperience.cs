@@ -181,6 +181,25 @@
                     Drawing.DrawText(pos.X - size.Width / 2f, pos.Y, Color.Red, text);
                 }
             }
+
+            foreach (var hero in HeroManager.Enemies)
+            {
+                var enemiesNearby = this.EnemiesNearby[hero.NetworkId];
+
+                if (enemiesNearby == 0)
+                {
+                   // continue;
+                }
+
+                var text = $"{enemiesNearby} enemies nearby!";
+                var size = Drawing.GetTextExtent(text);
+
+                Vector2 pos;
+                if (Drawing.WorldToScreen(hero.Position, out pos))
+                {
+                    Drawing.DrawText(pos.X - size.Width / 2f, pos.Y, Color.Red, text);
+                }
+            }
         }
 
         /// <summary>

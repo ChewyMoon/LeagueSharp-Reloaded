@@ -113,6 +113,11 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         public void OnLoad(EventArgs args)
         {
+            if (this.Player.ChampionName != "Cassiopeia")
+            {
+                return;
+            }
+
             this.Orbwalker = new Orbwalking.Orbwalker(Config.Instance.Load());
 
             this.Q = new Spell(SpellSlot.Q, 850);

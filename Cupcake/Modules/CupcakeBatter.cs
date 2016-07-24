@@ -17,62 +17,59 @@
         #region Public Methods and Operators
 
         /// <summary>
-        ///     Predicts the position of the target.
+        /// Predicts the position of the target.
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="delay">The delay.</param>
         /// <param name="speed">The speed.</param>
+        /// <param name="radius">The radius.</param>
         /// <param name="source">The source.</param>
-        /// <returns>The prediction <see cref="Vector3" /></returns>
-        public Vector3 PredictPosition(Obj_AI_Base target, float delay, float speed, Obj_AI_Hero source = null)
+        /// <returns>
+        /// The prediction <see cref="Vector3" />
+        /// </returns>
+        public BakedCupcake PredictPosition(Obj_AI_Base target, float delay, float speed, float radius, Obj_AI_Hero source = null)
         {
-            delay = Math.Abs(delay) < float.Epsilon ? 0.125f : delay;
             source = source ?? ObjectManager.Player;
 
-            var direction = GetTargetDirection(target);
-            var position = target.ServerPosition;
+            var path = target.GetWaypoints();
+            path.CutPath(delay * target.MoveSpeed);
 
-            if (target.IsMoving)
+            if (path.Count >= 2 && path.PathLength() >= (delay * speed) - (radius + target.BoundingRadius))
             {
-                // speed != 0
-                if (Math.Abs(speed) > float.Epsilon)
+                Console.WriteLine("target moving");
+                var tT = 0f;
+                for (var i = 0; i < path.Count - 1; i++)
                 {
-                    var vmc = Geometry.VectorMovementCollision(
-                        target.ServerPosition.To2D(), 
-                        target.GetWaypoints().Last(), 
-                        target.MoveSpeed, 
-                        source.ServerPosition.To2D(), 
-                        speed, 
-                        delay);
+                    var a = path[i];
+                    var b = path[i + 1];
 
+                    var tB = a.Distance(b) / speed;
+                    var direction = (b - a).Normalized();
+
+                    a -= speed * tT * direction;
+
+                    var vmc = Geometry.VectorMovementCollision(a, b, target.MoveSpeed, source.ServerPosition.To2D(), speed, tT);
                     var t = (float)vmc[0];
-                    var v = (Vector2)vmc[1];
+                    var pos = (Vector2)vmc[1];
 
-                    if (Math.Abs(t) > float.Epsilon && !float.IsNaN(t))
+                    if (pos.IsValid() && t >= tT && t <= tT + tB)
                     {
-                        position = new Vector3(v, target.ServerPosition.Z);
+                        if (pos.Distance(b, true) < 20)
+                        {
+                            break;
+                        }
+
+                        var p = pos + radius * direction;
+
+                        return new BakedCupcake() { CastPosition = pos.To3D(), UnitPosition = p.To3D() };
                     }
-                    else
-                    {
-                        position = target.ServerPosition
-                                   + ((direction.Normalized() * ((source.Distance(target) / speed) + delay))
-                                      * target.MoveSpeed);
-                    }
-                }
-                else
-                {
-                    position = target.ServerPosition + (direction.Normalized() * delay * target.MoveSpeed);
+
+                    tT += tB;
                 }
             }
+            Console.WriteLine("target not moving");
 
-            var baitLevel = CupcakeFactory.Make<ICupcakeBait>().GetBaitLevel(target) / 100;
-
-            if (target.IsMoving && baitLevel > 0 && baitLevel < 200)
-            {
-                position = position + ((target.ServerPosition - position) * baitLevel);
-            }
-
-            return position;
+            return new BakedCupcake() {CastPosition = target.ServerPosition, UnitPosition = target.ServerPosition};
         }
 
         #endregion

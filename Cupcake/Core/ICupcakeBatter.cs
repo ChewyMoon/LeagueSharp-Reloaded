@@ -18,9 +18,12 @@
         /// <param name="target">The target.</param>
         /// <param name="delay">The delay.</param>
         /// <param name="speed">The speed.</param>
+        /// <param name="radius">The radius.</param>
         /// <param name="source">The source.</param>
-        /// <returns>The predicted <see cref="Vector3"/></returns>
-        Vector3 PredictPosition(Obj_AI_Base target, float delay, float speed, Obj_AI_Hero source = null);
+        /// <returns>
+        /// The predicted <see cref="Vector3" />
+        /// </returns>
+        BakedCupcake PredictPosition(Obj_AI_Base target, float delay, float speed, float radius, Obj_AI_Hero source = null);
 
         #endregion
     }

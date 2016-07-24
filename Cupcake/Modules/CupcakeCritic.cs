@@ -46,7 +46,7 @@
             var collisions =
                 LeagueSharp.Common.Collision.GetCollision(
                     new List<Vector3>() { startPosition, endPosition },
-                    new PredictionInput() { Speed = speed, Delay = delay, Radius = width, Range = range, Unit = target, From = source.ServerPosition});
+                    new PredictionInput() { Speed = speed, Delay = delay, Radius = width, Range = range, Unit = target, From = source.ServerPosition, Collision = true, CollisionObjects = new []{CollisionableObjects.Heroes, CollisionableObjects.Minions,}});
 
             collisions.RemoveAll(x => x.NetworkId == source.NetworkId || x.NetworkId == target.NetworkId);
             return collisions.Count;

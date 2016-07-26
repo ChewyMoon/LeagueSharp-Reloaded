@@ -9,7 +9,7 @@
     using LeagueSharp.Common;
 
     /// <summary>
-    /// EAT MY ASS
+    ///     EAT MY ASS
     /// </summary>
     internal class EatMyCass
     {
@@ -143,27 +143,6 @@
             Game.PrintChat("<font color='#00FFFF'>Eat My Cass:</font> <font color='#FFFFFF'>Loaded!</font>");
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:BeforeAttack" /> event.
-        /// </summary>
-        /// <param name="args">The <see cref="Orbwalking.BeforeAttackEventArgs"/> instance containing the event data.</param>
-        private void OnBeforeAttack(Orbwalking.BeforeAttackEventArgs args)
-        {
-            var mode = this.Orbwalker.ActiveMode;
-            var aaCombo = Config.Instance["AutoAttackCombo"];
-            var aaHarass = Config.Instance["AutoAttackHarass"];
-
-            if (mode == Orbwalking.OrbwalkingMode.Combo && args.Target.Type == GameObjectType.obj_AI_Hero)
-            {
-                args.Process = aaCombo;
-            }
-
-            if (mode == Orbwalking.OrbwalkingMode.Mixed && args.Target.Type == GameObjectType.obj_AI_Hero)
-            {
-                args.Process = aaHarass;
-            }   
-        }
-
         #endregion
 
         #region Methods
@@ -181,6 +160,7 @@
             var useRComboKillable = Config.Instance["UseRComboKillable"];
             var useRAboveEnemyHp = Config.Instance.Menu.Item("UseRAboveEnemyHp").GetValue<Slider>().Value;
             var useEPoisonCombo = Config.Instance["UseEPoisonCombo"];
+            var dontQwIfTargetPoisoned = Config.Instance["DontQWIfTargetPoisoned"];
 
             var target = this.GetTarget();
 
@@ -205,12 +185,33 @@
 
             if (useW && this.W.IsReady() && target.Distance(this.Player) >= this.MinimumWRange)
             {
-                this.W.Cast(target);
+                if (dontQwIfTargetPoisoned)
+                {
+                    if (!target.IsPoisoned())
+                    {
+                        this.W.Cast(target);
+                        return;
+                    }
+                }
+                else
+                {
+                    this.W.Cast(target);
+                }
             }
 
             if (useQ && this.Q.IsReady())
             {
-                this.Q.Cast(target);
+                if (dontQwIfTargetPoisoned)
+                {
+                    if (!target.IsPoisoned())
+                    {
+                        this.Q.Cast(target);
+                    }
+                }
+                else
+                {
+                    this.Q.Cast(target);
+                }
             }
 
             if (!useE || !this.E.IsReady() || !useEPoisonCombo || target.IsPoisoned())
@@ -230,10 +231,11 @@
             var useEPoisonHarass = Config.Instance["UseEPoisonHarass"];
             var useEFarm = Config.Instance["UseEFarmHarass"];
             var harassMana = Config.Instance.Menu.Item("HarassMana").GetValue<Slider>().Value;
+            var dontQWIfTargetPoisoned = Config.Instance["DontQWIfTargetPoisoned"];
 
             var target = this.GetTarget();
             var minionE = MinionManager.GetMinions(this.E.Range)
-                .FirstOrDefault(x => this.E.GetDamage(x) > x.Health + 10);
+                .FirstOrDefault(x => this.E.GetDamage(x) > x.Health + 25);
 
             if (target == null)
             {
@@ -248,17 +250,40 @@
 
             if (this.Player.ManaPercent < harassMana)
             {
-                return;
+                if (this.E.IsReady() && minionE != null)
+                {
+                    this.E.CastOnUnit(minionE);
+                }
             }
 
             if (useQ && this.Q.IsReady())
             {
-                this.Q.Cast(target);
+                if (dontQWIfTargetPoisoned)
+                {
+                    if (!target.IsPoisoned())
+                    {
+                        this.Q.Cast(target);
+                    }
+                }
+                else
+                {
+                    this.Q.Cast(target);
+                }
             }
 
             if (useW && this.W.IsReady() && target.Distance(this.Player) >= this.MinimumWRange)
             {
-                this.W.Cast(target);
+                if (dontQWIfTargetPoisoned)
+                {
+                    if (!target.IsPoisoned())
+                    {
+                        this.W.Cast(target);
+                    }
+                }
+                else
+                {
+                    this.W.Cast(target);
+                }
             }
 
             if (!useE || !this.E.IsReady() || !useEPoisonHarass || target.IsPoisoned())
@@ -280,6 +305,11 @@
             var useE = Config.Instance["UseEWaveClear"];
             var farmOnlyNoChamps = Config.Instance["WaveClearChamps"];
             var waveClearMana = Config.Instance.Menu.Item("WaveClearMana").GetValue<Slider>().Value;
+
+            if (Config.Instance["WaveClearHarass"])
+            {
+                this.ExecuteHarass();
+            }
 
             if (farmOnlyNoChamps && HeroManager.Enemies.Any(x => x.IsValidTarget(this.Q.Range * 1.5f)))
             {
@@ -308,10 +338,45 @@
                     this.E.CastOnUnit(minionE);
                 }
             }
+        }
 
-            if (Config.Instance["WaveClearHarass"])
+        /// <summary>
+        ///     Secures kills.
+        /// </summary>
+        private void KillSteal()
+        {
+            foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(this.Q.Range)))
             {
-                this.ExecuteHarass();
+                var spell =
+                    this.Spells.Where(x => x.IsReady() && Config.Instance[$"Use{x.Slot}KS"])
+                        .OrderByDescending(x => x.GetDamage(enemy))
+                        .FirstOrDefault();
+
+                if (spell?.GetDamage(enemy) > enemy.Health)
+                {
+                    spell.Cast(enemy);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Raises the <see cref="E:BeforeAttack" /> event.
+        /// </summary>
+        /// <param name="args">The <see cref="Orbwalking.BeforeAttackEventArgs" /> instance containing the event data.</param>
+        private void OnBeforeAttack(Orbwalking.BeforeAttackEventArgs args)
+        {
+            var mode = this.Orbwalker.ActiveMode;
+            var aaCombo = Config.Instance["AutoAttackCombo"];
+            var aaHarass = Config.Instance["AutoAttackHarass"];
+
+            if (mode == Orbwalking.OrbwalkingMode.Combo && args.Target.Type == GameObjectType.obj_AI_Hero)
+            {
+                args.Process = aaCombo;
+            }
+
+            if (mode == Orbwalking.OrbwalkingMode.Mixed && args.Target.Type == GameObjectType.obj_AI_Hero)
+            {
+                args.Process = aaHarass;
             }
         }
 
@@ -439,24 +504,12 @@
                     break;
             }
 
-           
-        }
-
-        /// <summary>
-        /// Secures kills.
-        /// </summary>
-        private void KillSteal()
-        {
-            foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(Q.Range)))
+            if (Config.Instance["StackTear"] && this.Q.IsReady() && !this.Player.HasBuff("Recall")
+                && this.Player.Mana > this.Player.MaxMana * 0.95
+                && this.Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.None
+                && (Items.HasItem(3070) || Items.HasItem(3003)))
             {
-                var spell = this.Spells.Where(x => x.IsReady() && Config.Instance[$"Use{x.Slot}KS"])
-                        .OrderByDescending(x => x.GetDamage(enemy))
-                        .FirstOrDefault();
-
-                if (spell?.GetDamage(enemy) > enemy.Health)
-                {
-                    spell.Cast(enemy);
-                }
+                this.Q.Cast(Game.CursorPos);
             }
         }
 

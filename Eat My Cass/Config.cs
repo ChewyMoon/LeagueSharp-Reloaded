@@ -5,8 +5,10 @@
 
     using LeagueSharp.Common;
 
+    using Color = SharpDX.Color;
+
     /// <summary>
-    /// Assembly Configuration
+    ///     Assembly Configuration
     /// </summary>
     internal class Config
     {
@@ -50,17 +52,20 @@
         /// <summary>
         ///     Loads this instance.
         /// </summary>
-        /// <returns>A <see cref="Menu"/> for the <see cref="Orbwalking.Orbwalker"/>.</returns>
+        /// <returns>A <see cref="Menu" /> for the <see cref="Orbwalking.Orbwalker" />.</returns>
         public Menu Load()
         {
-            this.Menu = new Menu("Eat My Cass", "EatMyCass-CM", true).SetFontStyle(FontStyle.Bold, new SharpDX.Color(0, 255, 255));
+            this.Menu = new Menu("Eat My Cass", "EatMyCass-CM", true).SetFontStyle(
+                FontStyle.Bold, 
+                new Color(0, 255, 255));
 
             var orbwalkerSettings = new Menu("Orbwalker Settings", "OrbwalkerSettings");
             this.Menu.AddSubMenu(orbwalkerSettings);
 
             var comboMenu = new Menu("Combo Settings", "ComboSettings");
             var blackListMenu = new Menu("Blacklisted Ult Champions", "BlackPeopleLOL");
-            HeroManager.Enemies.ForEach(x => blackListMenu.AddItem(new MenuItem($"Blacklist{x.ChampionName}", x.ChampionName)).SetValue(false));
+            HeroManager.Enemies.ForEach(
+                x => blackListMenu.AddItem(new MenuItem($"Blacklist{x.ChampionName}", x.ChampionName)).SetValue(false));
             comboMenu.AddSubMenu(blackListMenu);
             comboMenu.AddItem(new MenuItem("UseQCombo", "Use Q").SetValue(true));
             comboMenu.AddItem(new MenuItem("UseWCombo", "Use W").SetValue(true));
@@ -85,9 +90,11 @@
 
             var waveClearMenu = new Menu("WaveClear Settings", "WaveClearSettings");
             waveClearMenu.AddItem(new MenuItem("UseQWaveClear", "Use Q").SetValue(true));
-            //waveClearMenu.AddItem(new MenuItem("UseWWaveClear", "Use W").SetValue(true));
+
+            // waveClearMenu.AddItem(new MenuItem("UseWWaveClear", "Use W").SetValue(true));
             waveClearMenu.AddItem(new MenuItem("UseEWaveClear", "Use E").SetValue(true));
-            //waveClearMenu.AddItem(new MenuItem("UseEPoisonWaveClear", "E Only Poisoned Minions").SetValue(true));
+
+            // waveClearMenu.AddItem(new MenuItem("UseEPoisonWaveClear", "E Only Poisoned Minions").SetValue(true));
             waveClearMenu.AddItem(new MenuItem("WaveClearChamps", "Wave Clear only if no Champs").SetValue(true));
             waveClearMenu.AddItem(new MenuItem("WaveClearHarass", "Harass in Wave Clear").SetValue(true));
             waveClearMenu.AddItem(new MenuItem("WaveClearMana", "WaveClear Mana").SetValue(new Slider(65)));
@@ -110,17 +117,21 @@
             var miscMenu = new Menu("Miscellaneous Settings", "MiscSettings");
             miscMenu.AddItem(new MenuItem("AutoAttackCombo", "Auto Attack in Combo").SetValue(false));
             miscMenu.AddItem(new MenuItem("AutoAttackHarass", "Auto Attack in Harass").SetValue(false));
-            //miscMenu.AddItem(new MenuItem("AutoAttackInERange", "Auto Attack in E Range").SetValue(true));
+
+            // miscMenu.AddItem(new MenuItem("AutoAttackInERange", "Auto Attack in E Range").SetValue(true));
             miscMenu.AddItem(new MenuItem("CustomTargeting", "Advanced Targeting").SetValue(true));
             miscMenu.AddItem(new MenuItem("AutoWCC", "Auto W on CC'd Targets").SetValue(true));
             miscMenu.AddItem(new MenuItem("AntiGapcloser", "Enable Anti-Gapcloser").SetValue(true));
             miscMenu.AddItem(new MenuItem("Interrupter", "Interrupt with R").SetValue(true));
+            miscMenu.AddItem(
+                new MenuItem("DontQWIfTargetPoisoned", "Wait for Poison to Expire before Q/W").SetValue(true));
+            miscMenu.AddItem(new MenuItem("StackTear", "Stack Tear").SetValue(true));
             this.Menu.AddSubMenu(miscMenu);
 
             this.Menu.AddItem(new MenuItem("Seperator", string.Empty));
             this.Menu.AddItem(
                 new MenuItem("Assembly", $"Eat My Cass version {Assembly.GetExecutingAssembly().GetName().Version}"))
-                .SetFontStyle(FontStyle.Bold, new SharpDX.Color(0, 255, 255));
+                .SetFontStyle(FontStyle.Bold, new Color(0, 255, 255));
             this.Menu.AddItem(new MenuItem("Author", "By ChewyMoon <3"));
             this.Menu.AddToMainMenu();
 

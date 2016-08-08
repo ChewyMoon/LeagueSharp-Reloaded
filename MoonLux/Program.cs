@@ -30,7 +30,7 @@
         /// <value>
         ///     <c>true</c> if the E spell was casted; otherwise, <c>false</c>.
         /// </value>
-        private static bool ECasted => Player.HasBuff("LuxLightStrikeKugel") || EObject != null;
+        private static bool ECasted => Player.HasBuff("LuxLightStrikeKugel")
 
         /// <summary>
         ///     Gets or sets the e object.
@@ -632,22 +632,6 @@
             R.SetSkillshot(1f, 110f, float.MaxValue, false, SkillshotType.SkillshotLine);
 
             CreateMenu();
-
-            GameObject.OnCreate += delegate(GameObject sender, EventArgs args2)
-                {
-                    if (sender.Name.Contains("Lux_Base_E_tar"))
-                    {
-                        EObject = sender;
-                    }
-                };
-
-            GameObject.OnDelete += delegate(GameObject sender, EventArgs args2)
-                {
-                    if (sender.Name.Contains("Lux_Base_E_tar"))
-                    {
-                        EObject = null;
-                    }
-                };
 
             DamageIndicator.DamageToUnit = DamageToUnit;
             DamageIndicator.Enabled = true;

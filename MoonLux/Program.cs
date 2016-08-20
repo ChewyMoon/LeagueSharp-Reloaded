@@ -30,7 +30,7 @@
         /// <value>
         ///     <c>true</c> if the E spell was casted; otherwise, <c>false</c>.
         /// </value>
-        private static bool ECasted => Player.HasBuff("LuxLightStrikeKugel")
+        private static bool ECasted => Player.HasBuff("LuxLightStrikeKugel");
 
         /// <summary>
         ///     Gets or sets the e object.

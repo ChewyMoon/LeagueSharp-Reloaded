@@ -5,14 +5,14 @@
     using LeagueSharp.Common;
 
     /// <summary>
-    /// The program.
+    ///     The program.
     /// </summary>
     public class Program
     {
         #region Methods
 
         /// <summary>
-        /// Mains the specified arguments.
+        ///     Mains the specified arguments.
         /// </summary>
         /// <param name="args">The arguments.</param>
         private static void Main(string[] args)

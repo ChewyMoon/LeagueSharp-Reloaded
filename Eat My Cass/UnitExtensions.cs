@@ -9,9 +9,8 @@
     {
         #region Public Methods and Operators
 
-
         /// <summary>
-        /// Determines whether this target is poisoned.
+        ///     Determines whether this target is poisoned.
         /// </summary>
         /// <param name="target">The target.</param>
         /// <returns><c>true</c> if the target is poisoned; else <c>false</c></returns>

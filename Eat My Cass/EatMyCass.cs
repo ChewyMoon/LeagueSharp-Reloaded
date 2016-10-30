@@ -16,11 +16,19 @@
         #region Properties
 
         /// <summary>
+        ///     Gets the minimum w range.
+        /// </summary>
+        /// <value>
+        ///     The minimum w range.
+        /// </value>
+        private static int MinimumWRange => 500;
+
+        /// <summary>
         ///     The stun buff types
         /// </summary>
         private static IEnumerable<BuffType> StunBuffTypes { get; } = new List<BuffType>
                                                                           {
-                                                                              BuffType.Knockup, BuffType.Snare, 
+                                                                              BuffType.Knockup, BuffType.Snare,
                                                                               BuffType.Stun, BuffType.Suppression
                                                                           };
 
@@ -31,14 +39,6 @@
         ///     The e.
         /// </value>
         private Spell E { get; set; }
-
-        /// <summary>
-        ///     Gets the minimum w range.
-        /// </summary>
-        /// <value>
-        ///     The minimum w range.
-        /// </value>
-        private int MinimumWRange => 500;
 
         /// <summary>
         ///     Gets or sets the orbwalker.
@@ -100,8 +100,8 @@
                        ? HeroManager.Enemies.Where(x => x.IsValidTarget(this.Q.Range) && x.IsPoisoned())
                              .OrderByDescending(
                                  x =>
-                                 this.Player.CalcDamage(x, Damage.DamageType.Magical, 100) / (1 + x.Health)
-                                 * TargetSelector.GetPriority(x))
+                                     this.Player.CalcDamage(x, Damage.DamageType.Magical, 100) / (1 + x.Health)
+                                     * TargetSelector.GetPriority(x))
                              .FirstOrDefault()
                          ?? TargetSelector.GetTarget(this.Q.Range, TargetSelector.DamageType.Magical)
                        : TargetSelector.GetTarget(this.Q.Range, TargetSelector.DamageType.Magical);
@@ -175,7 +175,7 @@
                     || (useRComboKillable
                         && this.Player.GetComboDamage(target, this.Spells.Select(x => x.Slot)) > target.Health
                         && this.Player.GetComboDamage(
-                            target, 
+                            target,
                             this.Spells.Where(x => x.Slot != SpellSlot.R).Select(x => x.Slot)) < target.Health)
                     || (target.HealthPercent > useRAboveEnemyHp)) && target.IsFacing(this.Player)
                 && !Config.Instance[$"Blacklist{target.ChampionName}"])
@@ -183,7 +183,7 @@
                 this.R.Cast(target, aoe: true);
             }
 
-            if (useW && this.W.IsReady() && target.Distance(this.Player) >= this.MinimumWRange)
+            if (useW && this.W.IsReady() && target.Distance(this.Player) >= MinimumWRange)
             {
                 if (dontQwIfTargetPoisoned)
                 {
@@ -231,7 +231,7 @@
             var useEPoisonHarass = Config.Instance["UseEPoisonHarass"];
             var useEFarm = Config.Instance["UseEFarmHarass"];
             var harassMana = Config.Instance.Menu.Item("HarassMana").GetValue<Slider>().Value;
-            var dontQWIfTargetPoisoned = Config.Instance["DontQWIfTargetPoisoned"];
+            var dontQwIfTargetPoisoned = Config.Instance["DontQWIfTargetPoisoned"];
 
             var target = this.GetTarget();
             var minionE = MinionManager.GetMinions(this.E.Range)
@@ -258,7 +258,7 @@
 
             if (useQ && this.Q.IsReady())
             {
-                if (dontQWIfTargetPoisoned)
+                if (dontQwIfTargetPoisoned)
                 {
                     if (!target.IsPoisoned())
                     {
@@ -271,9 +271,9 @@
                 }
             }
 
-            if (useW && this.W.IsReady() && target.Distance(this.Player) >= this.MinimumWRange)
+            if (useW && this.W.IsReady() && target.Distance(this.Player) >= MinimumWRange)
             {
-                if (dontQWIfTargetPoisoned)
+                if (dontQwIfTargetPoisoned)
                 {
                     if (!target.IsPoisoned())
                     {
@@ -291,6 +291,29 @@
                 this.E.CastOnUnit(target);
             }
             else if (this.E.IsReady() && minionE != null)
+            {
+                this.E.CastOnUnit(minionE);
+            }
+        }
+
+        /// <summary>
+        ///     Executes the last hit.
+        /// </summary>
+        private void ExecuteLastHit()
+        {
+            var lastHitE = Config.Instance["LastHitE"];
+            var lastHitMana = Config.Instance.Menu.Item("LastHitMana").GetValue<Slider>().Value;
+
+            if (this.Player.ManaPercent < lastHitMana || !lastHitE)
+            {
+                return;
+            }
+
+            var minionE = MinionManager.GetMinions(this.E.Range)
+                .FirstOrDefault(x => this.E.GetDamage(x) > x.Health + 25);
+
+            if (this.E.IsReady() && minionE != null
+                && this.Player.GetAutoAttackDamage(minionE) < this.E.GetDamage(minionE))
             {
                 this.E.CastOnUnit(minionE);
             }
@@ -439,7 +462,7 @@
             {
                 this.R.Cast(gapcloser.Sender);
             }
-            else if (gapcloser.End.Distance(this.Player.ServerPosition) >= this.MinimumWRange)
+            else if (gapcloser.End.Distance(this.Player.ServerPosition) >= MinimumWRange)
             {
                 this.W.Cast(gapcloser.Sender);
             }
@@ -501,6 +524,9 @@
                     break;
                 case Orbwalking.OrbwalkingMode.Combo:
                     this.ExecuteCombo();
+                    break;
+                case Orbwalking.OrbwalkingMode.LastHit:
+                    this.ExecuteLastHit();
                     break;
             }
 

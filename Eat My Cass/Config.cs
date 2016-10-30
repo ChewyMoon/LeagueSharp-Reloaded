@@ -56,7 +56,7 @@
         public Menu Load()
         {
             this.Menu = new Menu("Eat My Cass", "EatMyCass-CM", true).SetFontStyle(
-                FontStyle.Bold, 
+                FontStyle.Bold,
                 new Color(0, 255, 255));
 
             var orbwalkerSettings = new Menu("Orbwalker Settings", "OrbwalkerSettings");
@@ -79,12 +79,17 @@
             comboMenu.AddItem(new MenuItem("UseRAboveEnemyHp", "Use R if Target Health Above").SetValue(new Slider(75)));
             this.Menu.AddSubMenu(comboMenu);
 
+            var lastHitMenu = new Menu("Last Hit Settings", "LasthitSettings");
+            lastHitMenu.AddItem(new MenuItem("LastHitE", "Last Hit with E").SetValue(true));
+            lastHitMenu.AddItem(new MenuItem("LastHitMana", "Last Hit Mana").SetValue(new Slider(50)));
+            this.Menu.AddSubMenu(lastHitMenu);
+
             var harassMenu = new Menu("Harass Settings", "HarassSettings");
             harassMenu.AddItem(new MenuItem("UseQHarass", "Use Q").SetValue(true));
             harassMenu.AddItem(new MenuItem("UseWHarass", "Use W").SetValue(true));
             harassMenu.AddItem(new MenuItem("UseEHarass", "Use E").SetValue(true));
             harassMenu.AddItem(new MenuItem("UseEPoisonHarass", "Use E Only if Poisoned").SetValue(true));
-            harassMenu.AddItem(new MenuItem("UseEFarmHarass", "Last hit with E").SetValue(true));
+            harassMenu.AddItem(new MenuItem("UseEFarmHarass", "Last hit with E while Harassing").SetValue(false));
             harassMenu.AddItem(new MenuItem("HarassMana", "Harass Mana").SetValue(new Slider(50)));
             this.Menu.AddSubMenu(harassMenu);
 
@@ -130,7 +135,7 @@
 
             this.Menu.AddItem(new MenuItem("Seperator", string.Empty));
             this.Menu.AddItem(
-                new MenuItem("Assembly", $"Eat My Cass version {Assembly.GetExecutingAssembly().GetName().Version}"))
+                    new MenuItem("Assembly", $"Eat My Cass version {Assembly.GetExecutingAssembly().GetName().Version}"))
                 .SetFontStyle(FontStyle.Bold, new Color(0, 255, 255));
             this.Menu.AddItem(new MenuItem("Author", "By ChewyMoon <3"));
             this.Menu.AddToMainMenu();

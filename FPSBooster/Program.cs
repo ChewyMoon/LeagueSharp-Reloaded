@@ -13,14 +13,6 @@
         #region Public Properties
 
         /// <summary>
-        ///     Gets or sets a value indicating whether this is the first game update.
-        /// </summary>
-        /// <value>
-        ///     <c>true</c> if this is the first game update; otherwise, <c>false</c>.
-        /// </value>
-        public static bool FirstGameUpdate { get; set; } = true;
-
-        /// <summary>
         ///     Gets or sets the last end scene time.
         /// </summary>
         /// <value>
@@ -43,6 +35,14 @@
         ///     The last update time.
         /// </value>
         public static float LastGameUpdateTime { get; set; } = Environment.TickCount;
+
+        /// <summary>
+        ///     Gets or sets the menu.
+        /// </summary>
+        /// <value>
+        ///     The menu.
+        /// </value>
+        public static Menu Menu { get; set; }
 
         /// <summary>
         ///     Gets or sets the on draw delegates.
@@ -74,11 +74,17 @@
         /// <value>
         ///     The update time.
         /// </value>
-        public static float UpdateTime => (1 / 30f) * 1000;
+        public static float UpdateTime => (1 / Menu.Item("UpdateSpeed").GetValue<Slider>().Value) * 1000;
 
         #endregion
 
         #region Public Methods and Operators
+
+        // ReSharper disable once UnusedParameter.Local
+        public static void Main(string[] args)
+        {
+            CustomEvents.Game.OnGameLoad += OnGameLoad;
+        }
 
         /// <summary>
         ///     Updates the event.
@@ -140,6 +146,19 @@
         #region Methods
 
         /// <summary>
+        ///     Creates the menu.
+        /// </summary>
+        private static void CreateMenu()
+        {
+            Menu = new Menu("FPS Booster", "FPSBooster", true);
+            Menu.AddItem(new MenuItem("Enabled", "Enabled").SetValue(true));
+            Menu.AddItem(
+                new MenuItem("UpdateSpeed", "Time to update per second").SetValue(new Slider(60, 30, 300))
+                    .SetTooltip("This changes how often L# scripts will update and draw every second."));
+            Menu.AddToMainMenu();
+        }
+
+        /// <summary>
         ///     The OnDraw event.
         /// </summary>
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
@@ -179,13 +198,6 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void FpsBoosterUpdate(EventArgs args)
         {
-            // Skip the first update to make sure all events are loaded in
-            if (FirstGameUpdate)
-            {
-                FirstGameUpdate = false;
-                return;
-            }
-
             OnGameUpdateDelegates = UpdateEvent(
                 OnGameUpdateDelegates,
                 typeof(Game),
@@ -197,20 +209,22 @@
             LastGameUpdateTime = Environment.TickCount;
         }
 
-        static void Main(string[] args)
-        {
-            CustomEvents.Game.OnGameLoad += OnGameLoad;
-        }
-
         /// <summary>
         ///     Raises the <see cref="E:GameLoad" /> event.
         /// </summary>
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void OnGameLoad(EventArgs args)
         {
-            Game.OnUpdate += FpsBoosterUpdate;
-            Drawing.OnDraw += FpsBoosterDraw;
-            Drawing.OnEndScene += FpsBoosterEndScene;
+            CreateMenu();
+
+            Utility.DelayAction.Add(
+                1,
+                () =>
+                    {
+                        Game.OnUpdate += FpsBoosterUpdate;
+                        Drawing.OnDraw += FpsBoosterDraw;
+                        Drawing.OnEndScene += FpsBoosterEndScene;
+                    });
         }
 
         #endregion

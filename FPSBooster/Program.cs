@@ -114,7 +114,7 @@
                     return null;
                 }
 
-                var updateHandlers = ((List<T>)memberInfo.GetValue(null));
+                var updateHandlers = (List<T>)memberInfo.GetValue(null);
                 if (updateHandlers == null)
                 {
                     Console.WriteLine("Error trying to obain UpdateHandlers from the {0} class.", eventClass.FullName);
@@ -124,8 +124,7 @@
                 delegates = new List<Delegate>();
                 delegates.AddRange(
                     updateHandlers.Cast<Delegate>().Where(
-                        x =>
-                            x.Method.Name != localUpdateMethodName
+                        x => x.Method.Name != localUpdateMethodName
                             && x.Method.DeclaringType?.FullName != "LeagueSharp.Sandbox.LeagueSharpBootstrapper"));
 
                 delegates.RemoveAll(x => x.Method.Name != localUpdateMethodName);

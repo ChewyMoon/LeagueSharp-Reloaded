@@ -176,6 +176,11 @@
                 LastGameDrawTime,
                 UpdateTime);
 
+            if (result == null)
+            {
+                return;
+            }
+
             OnDrawDelegates = result.Item1;
             LastGameDrawTime = result.Item2;
         }
@@ -194,6 +199,11 @@
                 LastEndSceneTime,
                 UpdateTime);
 
+            if (result == null)
+            {
+                return;
+            }
+
             OnEndSceneDelegates = result.Item1;
             LastEndSceneTime = result.Item2;
         }
@@ -211,6 +221,11 @@
                 nameof(FpsBoosterUpdate),
                 LastGameUpdateTime,
                 UpdateTime);
+
+            if (result == null)
+            {
+                return;
+            }
 
             OnGameUpdateDelegates = result.Item1;
             LastGameUpdateTime = result.Item2;

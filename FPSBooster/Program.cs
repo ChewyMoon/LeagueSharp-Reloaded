@@ -87,8 +87,9 @@
         }
 
         /// <summary>
-        ///     Updates the event.
+        /// Updates the event.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="delegates">The delegates.</param>
         /// <param name="eventClass">The event class.</param>
         /// <param name="fieldName">Name of the field.</param>
@@ -96,7 +97,7 @@
         /// <param name="lastUpdateTime">The last update time.</param>
         /// <param name="updateTime">The update time.</param>
         /// <returns></returns>
-        public static List<Delegate> UpdateEvent(
+        public static Tuple<List<Delegate>, float> UpdateEvent<T>(
             List<Delegate> delegates,
             Type eventClass,
             string fieldName,
@@ -113,7 +114,7 @@
                     return null;
                 }
 
-                var updateHandlers = (List<Delegate>)memberInfo.GetValue(null);
+                var updateHandlers = ((List<T>)memberInfo.GetValue(null));
                 if (updateHandlers == null)
                 {
                     Console.WriteLine("Error trying to obain UpdateHandlers from the {0} class.", eventClass.FullName);
@@ -122,23 +123,23 @@
 
                 delegates = new List<Delegate>();
                 delegates.AddRange(
-                    updateHandlers.Where(
+                    updateHandlers.Cast<Delegate>().Where(
                         x =>
                             x.Method.Name != localUpdateMethodName
                             && x.Method.DeclaringType?.FullName != "LeagueSharp.Sandbox.LeagueSharpBootstrapper"));
 
                 delegates.RemoveAll(x => x.Method.Name != localUpdateMethodName);
 
-                return delegates;
+                return new Tuple<List<Delegate>, float>(delegates, lastUpdateTime);
             }
 
             if (Environment.TickCount - lastUpdateTime < updateTime)
             {
-                return delegates;
+                return new Tuple<List<Delegate>, float>(delegates, lastUpdateTime);
             }
 
             delegates.ForEach(x => x.Method.Invoke(x.Target, new object[] { EventArgs.Empty }));
-            return delegates;
+            return new Tuple<List<Delegate>, float>(delegates, Environment.TickCount);
         }
 
         #endregion
@@ -153,9 +154,12 @@
             Menu = new Menu("FPS Booster", "FPSBooster", true);
             Menu.AddItem(new MenuItem("Enabled", "Enabled").SetValue(true));
             Menu.AddItem(
-                new MenuItem("UpdateSpeed", "Time to update per second").SetValue(new Slider(60, 30, 300))
+                new MenuItem("UpdateSpeed", "Time to update per second").SetValue(new Slider(60, 1, 300))
                     .SetTooltip("This changes how often L# scripts will update and draw every second."));
             Menu.AddToMainMenu();
+
+            Menu.Item("Enabled").ValueChanged +=
+                (sender, args) => Game.PrintChat("Please press F5 to enable/disable FPSBooster.");
         }
 
         /// <summary>
@@ -164,7 +168,7 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void FpsBoosterDraw(EventArgs args)
         {
-            OnDrawDelegates = UpdateEvent(
+            var result = UpdateEvent<DrawingDraw>(
                 OnDrawDelegates,
                 typeof(Drawing),
                 "DrawHandlers",
@@ -172,7 +176,8 @@
                 LastGameDrawTime,
                 UpdateTime);
 
-            LastGameDrawTime = Environment.TickCount;
+            OnDrawDelegates = result.Item1;
+            LastGameDrawTime = result.Item2;
         }
 
         /// <summary>
@@ -181,7 +186,7 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void FpsBoosterEndScene(EventArgs args)
         {
-            OnEndSceneDelegates = UpdateEvent(
+            var result = UpdateEvent<DrawingEndScene>(
                 OnEndSceneDelegates,
                 typeof(Drawing),
                 "EndSceneHandlers",
@@ -189,7 +194,8 @@
                 LastEndSceneTime,
                 UpdateTime);
 
-            LastEndSceneTime = Environment.TickCount;
+            OnEndSceneDelegates = result.Item1;
+            LastEndSceneTime = result.Item2;
         }
 
         /// <summary>
@@ -198,7 +204,7 @@
         /// <param name="args">The <see cref="EventArgs" /> instance containing the event data.</param>
         private static void FpsBoosterUpdate(EventArgs args)
         {
-            OnGameUpdateDelegates = UpdateEvent(
+            var result = UpdateEvent<GameUpdate>(
                 OnGameUpdateDelegates,
                 typeof(Game),
                 "UpdateHandlers",
@@ -206,7 +212,8 @@
                 LastGameUpdateTime,
                 UpdateTime);
 
-            LastGameUpdateTime = Environment.TickCount;
+            OnGameUpdateDelegates = result.Item1;
+            LastGameUpdateTime = result.Item2;
         }
 
         /// <summary>
@@ -216,6 +223,11 @@
         private static void OnGameLoad(EventArgs args)
         {
             CreateMenu();
+
+            if (!Menu.Item("Enabled").GetValue<bool>())
+            {
+                return;
+            }
 
             Utility.DelayAction.Add(
                 1,
